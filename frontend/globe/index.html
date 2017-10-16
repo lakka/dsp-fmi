@@ -105,14 +105,14 @@
 
   <div id="container"></div>
 
-  <div id="info">
+  <div id="info" style="display : none">
     <strong><a href="http://www.chromeexperiments.com/globe">WebGL Globe</a></strong> <span class="bull">&bull;</span> Created by the Google Data Arts Team <span class="bull">&bull;</span> Data acquired from <a href="http://sedac.ciesin.columbia.edu/gpw/">SEDAC</a>
   </div>
 
   <div id="currentInfo">
-    <span id="year1990" class="year">1990</span>
-    <span id="year1995" class="year">1995</span>
-    <span id="year2000" class="year">2000</span>
+    <span id="year1990" style="font-size : 14px" class="year">Satellite data</span>
+    <span id="year1995" style="display : none" class="year">1995</span>
+    <span id="year2000" style="display : none" class="year">2000</span>
   </div>
 
   <div id="title">
@@ -166,14 +166,16 @@
       
       
       xhr = new XMLHttpRequest();
-      xhr.open('GET', './population909500.json', true);
+      xhr.open('GET', './data.json', true);
       xhr.onreadystatechange = function(e) {
         if (xhr.readyState === 4) {
           if (xhr.status === 200) {
             var data = JSON.parse(xhr.responseText);
             window.data = data;
+            console.log(data)
             for (i=0;i<data.length;i++) {
-              globe.addData(data[i][1], {format: 'magnitude', name: data[i][0], animated: true});
+                serie = [].concat.apply([], data[i].data);
+                globe.addData(serie, {format: 'magnitude', name: data[i].time, animated: true});
             }
             
             globe.createPoints();
@@ -185,6 +187,19 @@
       };
       xhr.send(null);
     }
+
+//
+//    addPoints = function(points) {
+//        for(var i = 0; i<points.length; i++) {
+//            var y = document.getElementById('year'+years[i]);
+//            y.addEventListener('mouseover', settime(globe,i), false);
+//        }
+//    };
+//
+//    addPoint = function(point) {
+//
+//    };
+
 
   </script>
 

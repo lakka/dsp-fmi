@@ -174,7 +174,7 @@ DAT.Globe = function(container, opts) {
     opts.format = opts.format || 'magnitude'; // other option is 'legend'
     if (opts.format === 'magnitude') {
       step = 3;
-      colorFnWrapper = function(data, i) { return colorFn(data[i+2]); }
+      colorFnWrapper = function(data, i) { return new THREE.Color(1, 0, 0); }
     } else if (opts.format === 'legend') {
       step = 4;
       colorFnWrapper = function(data, i) { return colorFn(data[i+3]); }
@@ -191,6 +191,7 @@ DAT.Globe = function(container, opts) {
 //        size = data[i + 2];
           color = colorFnWrapper(data,i);
           size = 0;
+          console.log(color)
           addPoint(lat, lng, size, color, this._baseGeometry);
         }
       }

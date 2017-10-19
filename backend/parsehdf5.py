@@ -33,5 +33,5 @@ for fname in onlyfiles:
     all_data += parse_hdf5(fname)
 
 print len(all_data)
-with open(join('./public',date+'.json'), 'w') as fp:
+with open(join('./public',date+'.json'), 'w+') as fp:
     json.dump(all_data, fp)

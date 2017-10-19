@@ -1,2 +1,3 @@
-backend/data
+backend/data/*
+backend/public/*
 backend/config.ini

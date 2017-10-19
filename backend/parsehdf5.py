@@ -32,6 +32,6 @@ onlyfiles = [join(path,f) for f in listdir(path) if isfile(join(path, f)) and da
 for fname in onlyfiles:
     all_data += parse_hdf5(fname)
 
-print len(all_data)
+print "Creating a json with %s time entries." % len(all_data)
 with open(join('./public',date+'.json'), 'w+') as fp:
     json.dump(all_data, fp)

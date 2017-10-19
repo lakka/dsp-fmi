@@ -36,6 +36,7 @@ diff = [f for f in servfiles if f not in listdir(datadir)]
 
 for f in diff:
     fp = open(join(datadir, f), 'w')
+    print "Fetching %s" % f
     ftp.retrbinary('RETR %s' % f, fp.write)
 
 ftp.quit()

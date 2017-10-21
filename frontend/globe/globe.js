@@ -74,6 +74,7 @@ DAT.Globe = function(container, opts) {
   var overRenderer;
 
   var curZoomSpeed = 0;
+  var mouseSpeed = 10; // From 1 to 10.
   var zoomSpeed = 50;
 
   var mouse = { x: 0, y: 0 }, mouseOnDown = { x: 0, y: 0 };
@@ -84,6 +85,8 @@ DAT.Globe = function(container, opts) {
   var distance = 100000, distanceTarget = 100000;
   var padding = 40;
   var PI_HALF = Math.PI / 2;
+
+  var point_size = 0.7;
 
   function init() {
 
@@ -136,7 +139,8 @@ DAT.Globe = function(container, opts) {
     mesh.scale.set( 1.1, 1.1, 1.1 );
     scene.add(mesh);
 
-    geometry = new THREE.BoxGeometry(0.75, 0.75, 1);
+    geometry = new THREE.CylinderGeometry( point_size, point_size, 1, 25);
+    geometry.applyMatrix( new THREE.Matrix4().makeRotationX( THREE.Math.degToRad( 90 ) ) );
     geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0,0,-0.5));
 
     point = new THREE.Mesh(geometry);
@@ -174,10 +178,10 @@ DAT.Globe = function(container, opts) {
     opts.format = opts.format || 'magnitude'; // other option is 'legend'
     if (opts.format === 'magnitude') {
       step = 3;
-      colorFnWrapper = function(data, i) { return new THREE.Color(1, 0, 0); }
+      colorFnWrapper = function(data, i) { return colorFn((data[i+2] - 200) / 290);}
     } else if (opts.format === 'legend') {
       step = 4;
-      colorFnWrapper = function(data, i) { return colorFn(data[i+3]); }
+      colorFnWrapper = function(data, i) { return colorFn(data[i+2]); }
     } else {
       throw('error: format not supported: '+opts.format);
     }
@@ -191,7 +195,6 @@ DAT.Globe = function(container, opts) {
 //        size = data[i + 2];
           color = colorFnWrapper(data,i);
           size = 0;
-          console.log(color)
           addPoint(lat, lng, size, color, this._baseGeometry);
         }
       }
@@ -208,7 +211,7 @@ DAT.Globe = function(container, opts) {
       lng = data[i + 1];
       color = colorFnWrapper(data,i);
       size = data[i + 2];
-      size = size*200;
+      size = 0.2;
       addPoint(lat, lng, size, color, subgeo);
     }
     if (opts.animated) {
@@ -229,11 +232,8 @@ DAT.Globe = function(container, opts) {
             }));
       } else {
         if (this._baseGeometry.morphTargets.length < 8) {
-          console.log('t l',this._baseGeometry.morphTargets.length);
           var padding = 8-this._baseGeometry.morphTargets.length;
-          console.log('padding', padding);
           for(var i=0; i<=padding; i++) {
-            console.log('padding',i);
             this._baseGeometry.morphTargets.push({'name': 'morphPadding'+i, vertices: this._baseGeometry.vertices});
           }
         }
@@ -294,8 +294,8 @@ DAT.Globe = function(container, opts) {
 
     var zoomDamp = distance/1000;
 
-    target.x = targetOnDown.x + (mouse.x - mouseOnDown.x) * 0.005 * zoomDamp;
-    target.y = targetOnDown.y + (mouse.y - mouseOnDown.y) * 0.005 * zoomDamp;
+    target.x = targetOnDown.x + (mouse.x - mouseOnDown.x) * mouseSpeed / 1000 * zoomDamp;
+    target.y = targetOnDown.y + (mouse.y - mouseOnDown.y) * mouseSpeed / 1000 * zoomDamp;
 
     target.y = target.y > PI_HALF ? PI_HALF : target.y;
     target.y = target.y < - PI_HALF ? - PI_HALF : target.y;
@@ -394,9 +394,9 @@ DAT.Globe = function(container, opts) {
     var lastIndex = index - 1;
     var leftover = scaledt - index;
     if (lastIndex >= 0) {
-      this.points.morphTargetInfluences[lastIndex] = 1 - leftover;
+      // this.points.morphTargetInfluences[lastIndex] = 1 - leftover;
     }
-    this.points.morphTargetInfluences[index] = leftover;
+    // this.points.morphTargetInfluences[index] = leftover;
     this._time = t;
   });
 

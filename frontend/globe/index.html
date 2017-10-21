@@ -106,7 +106,7 @@
   <div id="container"></div>
 
   <div id="info" style="display : none">
-    <strong><a href="http://www.chromeexperiments.com/globe">WebGL Globe</a></strong> <span class="bull">&bull;</span> Created by the Google Data Arts Team <span class="bull">&bull;</span> Data acquired from <a href="http://sedac.ciesin.columbia.edu/gpw/">SEDAC</a>
+    <strong><a href="http://www.chromeexperiments.com/globe">Satellite data.</a></strong> <span class="bull">&bull;</span> Created by University of Helsinki. <span class="bull">&bull;</span> Data acquired from FMI
   </div>
 
   <div id="currentInfo">
@@ -172,13 +172,10 @@
           if (xhr.status === 200) {
             var data = JSON.parse(xhr.responseText);
             window.data = data;
-            console.log(data)
             for (i=0;i<data.length;i++) {
-                serie = [].concat.apply([], data[i].data);
-                globe.addData(serie, {format: 'magnitude', name: data[i].time, animated: true});
+                globe.addData([].concat.apply([], data[i].data), {format: 'magnitude', name: 'Test', animated: false})
+                globe.createPoints();
             }
-            
-            globe.createPoints();
             settime(globe,0)();
             globe.animate();
             document.body.style.backgroundImage = 'none'; // remove loading

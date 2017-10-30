@@ -165,13 +165,13 @@
       TWEEN.start();
 
       xhr = new XMLHttpRequest();
-      var year = new Date().getUTCYear()
+      var year = new Date().getFullYear()
       var month = new Date().getUTCMonth() + 1;
       month = ("0" + month).slice(-2);
       var day = new Date().getUTCDate();
       day = ("0" + day).slice(-2);
       console.log('Loading data from ' + './' + month + day + '.json');
-      xhr.open('GET', 'http://fmi-ds-backend.prototyping.xyz/' year + '-' + month + '-' + day + '.json', true);
+      xhr.open('GET', 'http://fmi-ds-backend.prototyping.xyz/' + year + '-' + month + '-' + day + '.json', true);
       xhr.onreadystatechange = function(e) {
         if (xhr.readyState === 4) {
           if (xhr.status === 200) {

@@ -27,11 +27,12 @@ def parse_hdf5(fname):
     return result
 
 date = dt.utcnow().strftime('%m%d')
+date_long = dt.utcnow().strftime('%Y-%m-%d')
 all_data = []
 onlyfiles = [join(path,f) for f in listdir(path) if isfile(join(path, f)) and date in f]
 for fname in onlyfiles:
     all_data += parse_hdf5(fname)
 
 print "Creating a json with %s time entries." % len(all_data)
-with open(join('./public',date+'.json'), 'w+') as fp:
+with open(join('./public',date_long+'.json'), 'w+') as fp:
     json.dump(all_data, fp)

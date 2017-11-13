@@ -32,5 +32,5 @@ def fit(n=2000):
 
 asd = fit()
 
-# to predict o3 for lat 55, long 60 use: asd.predict([[55,60,100]])
+# to predict o3 for lat 55, long 60 use: asd.predict([[55,60]])
 # to get also the standard deviation of the gaussian used for predicting use: asd.predict([[55,60]], return_std=True) (much slower)

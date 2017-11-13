@@ -10,8 +10,12 @@ from os import listdir
 path = './data/'
 def parse_hdf5(fname):
     f = h5py.File(fname)
-    geo = f['GeolocationData']
-    science = f['ScienceData']
+
+    if not f.keys():
+        return []
+
+    geo = f['GeolocationData'] if 'GeolocationData' in f.keys() else f['GEOLOCATION_DATA']
+    science = f['ScienceData'] if 'ScienceData' in f.keys() else f['SCIENCE_DATA']
 
     times = geo['UTC_CCSDS_A']
     lat = geo['Latitude']

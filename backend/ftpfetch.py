@@ -26,17 +26,24 @@ server = config['server']
 user = config['user']
 password = config['password']
 
+def fetchdiff(ftp, dir):
+    listing = []
+    ftp.cwd(dir)
+    ftp.retrlines('MLSD', listing.append)
+
+    servfiles = [f for f in [l.split()[1] for l in listing] if 'OMPS-NPP-TC_EDR_TO3' in f and '.h5' in f]
+    diff = [f for f in servfiles if f not in listdir(datadir)]
+
+    for f in diff:
+        fp = open(join(datadir, f), 'w')
+        print "Fetching %s" % f
+        ftp.retrbinary('RETR %s' % f, fp.write)
+
+    ftp.cwd('/')
+
+
 ftp = FTP(server, user, password)
-listing = []
-ftp.cwd('OMPS')
-ftp.retrlines('MLSD', listing.append)
-
-servfiles = [f for f in [l.split()[1] for l in listing] if 'OMPS-NPP-TC_EDR_TO3' in f and '.h5' in f]
-diff = [f for f in servfiles if f not in listdir(datadir)]
-
-for f in diff:
-    fp = open(join(datadir, f), 'w')
-    print "Fetching %s" % f
-    ftp.retrbinary('RETR %s' % f, fp.write)
+fetchdiff(ftp, 'OMPS')
+fetchdiff(ftp, 'OMPS_alaska')
 
 ftp.quit()

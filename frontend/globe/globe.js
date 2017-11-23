@@ -141,7 +141,7 @@ DAT.Globe = function(container, opts) {
         mesh.scale.set( 1.1, 1.1, 1.1 );
         scene.add(mesh);
 
-        geometry = new THREE.CylinderGeometry( point_size, point_size, 0.1, 6);
+        geometry = new THREE.CylinderBufferGeometry( point_size, point_size, 0.1, 6);
         geometry.applyMatrix( new THREE.Matrix4().makeRotationX( THREE.Math.degToRad( 90 ) ) );
         geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0,0,-0.5));
 
@@ -173,6 +173,7 @@ DAT.Globe = function(container, opts) {
         container.addEventListener('mouseout', function() {
             overRenderer = false;
         }, false);
+
     }
 
     function onDocumentMouseMove(event) {
@@ -186,6 +187,8 @@ DAT.Globe = function(container, opts) {
     }
 
     function addData(data, opts) {
+
+
         var lat, lng, size, color, i, step, colorFnWrapper;
 
         opts.animated = opts.animated || false;
@@ -193,7 +196,7 @@ DAT.Globe = function(container, opts) {
         opts.format = opts.format || 'magnitude'; // other option is 'legend'
         if (opts.format === 'magnitude') {
             step = 3;
-            colorFnWrapper = function(data, i) { return colorFn((data[i+2] - 200) / 290);}
+            // colorFnWrapper = function(data, i) { return colorFn((data[i+2] - 200) / 290);}
         } else if (opts.format === 'legend') {
             step = 4;
             colorFnWrapper = function(data, i) { return colorFn(data[i+2]); }
@@ -201,31 +204,15 @@ DAT.Globe = function(container, opts) {
             throw('error: format not supported: '+opts.format);
         }
 
-        if (opts.animated) {
-            if (this._baseGeometry === undefined) {
-                this._baseGeometry = new THREE.Geometry();
-                for (i = 0; i < data.length; i += step) {
-                    lat = data[i];
-                    lng = data[i + 1];
-//        size = data[i + 2];
-                    color = colorFnWrapper(data,i);
-                    size = 0;
-                    addPoint(lat, lng, size, color, this._baseGeometry);
-                }
-            }
-            if(this._morphTargetId === undefined) {
-                this._morphTargetId = 0;
-            } else {
-                this._morphTargetId += 1;
-            }
-            opts.name = opts.name || 'morphTarget'+this._morphTargetId;
-        }
-        var subgeo = new THREE.Geometry();
+
+        // subgeo = new THREE.Geometry();
+
         lat = data[0];
         lng = data[1];
-        color = colorFnWrapper(data,0);
+        // color = colorFnWrapper(data,0);
+        color = 0
         size = 0.2;
-        subgeo.pointData = { 'lat' : data[0], 'lng' : data[1], 'int' : data[2] };
+        // subgeo.pointData = { 'lat' : data[0], 'lng' : data[1], 'int' : data[2] };
         addPoint(lat, lng, size, color, subgeo);
         if (opts.animated) {
             this._baseGeometry.morphTargets.push({'name': opts.name, vertices: subgeo.vertices});
@@ -235,54 +222,94 @@ DAT.Globe = function(container, opts) {
 
     }
 
-    function createPoints() {
-        if (this._baseGeometry !== undefined) {
-            if (this.is_animated === false) {
-                this.points = new THREE.Mesh(this._baseGeometry, new THREE.MeshBasicMaterial({
-                    color: 0xffffff,
-                    vertexColors: THREE.FaceColors,
-                    morphTargets: false
-                }));
-            } else {
-                if (this._baseGeometry.morphTargets.length < 8) {
-                    var padding = 8-this._baseGeometry.morphTargets.length;
-                    for(var i=0; i<=padding; i++) {
-                        this._baseGeometry.morphTargets.push({'name': 'morphPadding'+i, vertices: this._baseGeometry.vertices});
-                    }
-                }
-                this.points = new THREE.Mesh(this._baseGeometry, new THREE.MeshBasicMaterial({
-                    color: 0xffffff,
-                    vertexColors: THREE.FaceColors,
-                    morphTargets: true
-                }));
+    // function createPoints() {
+    //     if (this._baseGeometry !== undefined) {
+    //         if (this.is_animated === false) {
+    //             this.points = new THREE.Mesh(this._baseGeometry, new THREE.MeshBasicMaterial({
+    //                 color: 0xffffff,
+    //                 vertexColors: THREE.FaceColors,
+    //                 morphTargets: false
+    //             }));
+    //         } else {
+    //             if (this._baseGeometry.morphTargets.length < 8) {
+    //                 var padding = 8-this._baseGeometry.morphTargets.length;
+    //                 for(var i=0; i<=padding; i++) {
+    //                     this._baseGeometry.morphTargets.push({'name': 'morphPadding'+i, vertices: this._baseGeometry.vertices});
+    //                 }
+    //             }
+    //             // this.points = new THREE.Mesh(this._baseGeometry, new THREE.MeshBasicMaterial({
+    //             //     color: 0xffffff,
+    //             //     vertexColors: THREE.FaceColors,
+    //             //     morphTargets: true
+    //             // }));
+    //         }
+    //         // scene.add(this.points);
+    //     }
+    // }
+    //
+    // function addPoint(lat, lng, size, color, subgeo) {
+    //
+    //     var phi = (90 - lat) * Math.PI / 180;
+    //     var theta = (180 - lng) * Math.PI / 180;
+    //
+    //     point.position.x = 200 * Math.sin(phi) * Math.cos(theta);
+    //     point.position.y = 200 * Math.cos(phi);
+    //     point.position.z = 200 * Math.sin(phi) * Math.sin(theta);
+    //
+    //     point.lookAt(mesh.position);
+    //
+    //     point.scale.z = Math.max( size, 0.1 ); // avoid non-invertible matrix
+    //     point.updateMatrix();
+    //
+    //     // for (var i = 0; i < point.geometry.faces.length; i++) {
+    //     //
+    //     //     point.geometry.faces[i].color = color;
+    //     //
+    //     // }
+    //     if(point.matrixAutoUpdate){
+    //         point.updateMatrix();
+    //     }
+    // }
+
+    function addDataPoints(data) {
+
+        var colorFn = function(x) {
+            var c = new THREE.Color();
+            c.setHSL( ( 0.6 - ( x * 0.5 ) ), 1.0, 0.5 );
+            return c;
+        };
+
+        var geometry = new THREE.Geometry();
+        var material = new THREE.PointsMaterial( { size: 5,  vertexColors: THREE.VertexColors } );
+
+        for (var i = 0; i < data.length; i++) {
+            for (var j = 0; j < data[i].data.length; j++) {
+
+                dataPoint = [].concat.apply([], data[i].data[j])
+
+                lat = dataPoint[0];
+                lng = dataPoint[1];
+
+                // console.log((dataPoint[2] - 200) / 300);
+
+                var phi   = (90  - lat) * Math.PI / 180;
+                var theta = (180 - lng) * Math.PI / 180;
+
+                var vertex   = new THREE.Vector3();
+
+                vertex.x = 200 * Math.sin(phi) * Math.cos(theta);
+                vertex.y = 200 * Math.cos(phi);
+                vertex.z = 200 * Math.sin(phi) * Math.sin(theta);
+
+                colors = colorFn((dataPoint[2] - 200) / 300);
+
+                geometry.vertices.push( vertex );
+                geometry.colors.push( colors );
             }
-            scene.add(this.points);
         }
-    }
 
-    function addPoint(lat, lng, size, color, subgeo) {
+        scene.add(  new THREE.Points( geometry, material ) );
 
-        var phi = (90 - lat) * Math.PI / 180;
-        var theta = (180 - lng) * Math.PI / 180;
-
-        point.position.x = 200 * Math.sin(phi) * Math.cos(theta);
-        point.position.y = 200 * Math.cos(phi);
-        point.position.z = 200 * Math.sin(phi) * Math.sin(theta);
-
-        point.lookAt(mesh.position);
-
-        point.scale.z = Math.max( size, 0.1 ); // avoid non-invertible matrix
-        point.updateMatrix();
-
-        for (var i = 0; i < point.geometry.faces.length; i++) {
-
-            point.geometry.faces[i].color = color;
-
-        }
-        if(point.matrixAutoUpdate){
-            point.updateMatrix();
-        }
-        subgeo.merge(point.geometry, point.matrix);
     }
 
     function onMouseDown(event) {
@@ -367,50 +394,50 @@ DAT.Globe = function(container, opts) {
 
     function render() {
 
-        //   and direction into the scene (camera direction)
-        var vector = new THREE.Vector3(mouse.x, mouse.y, 1);
-        vector.unproject(camera);
-        var ray = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
-
-        // create an array containing all objects in the scene with which the ray intersects
-        var intersects = ray.intersectObjects(scene.children);
-
-        // if there is one (or more) intersections
-        if (intersects.length > 0) {
-            // if the closest object intersected is not the currently stored intersection object
-            if (intersects[0].object != intersected) {
-                // restore previous intersection object (if it exists) to its original color
-                if (intersected) {
-                    if (intersected.material.color) {
-                        console.log(intersected);
-                        updatePointData(intersected.geometry.pointData);
-                        intersected.material.color.setHex(intersected.currentHex);
-                    }
-                }
-                // store reference to closest object as current intersection object
-                intersected = intersects[0].object;
-
-                if (intersected) {
-                    if (intersected.material.color) {
-                        // store color of closest object (for later restoration)
-                        intersected.currentHex = intersected.material.color.getHex();
-                        // set a new color for closest object
-                        intersected.material.color.setHex(0xFF3866);
-                    }
-                }
-            }
-        } else // there are no intersections
-        {
-            // restore previous intersection object (if it exists) to its original color
-            if (intersected) {
-                if (intersected.material.color) {
-                    intersected.material.color.setHex(intersected.currentHex);
-                }
-            }
-            // remove previous intersection object reference
-            //     by setting current intersection object to "nothing"
-            intersected = null;
-        }
+        // //   and direction into the scene (camera direction)
+        // var vector = new THREE.Vector3(mouse.x, mouse.y, 1);
+        // vector.unproject(camera);
+        // var ray = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
+        //
+        // // create an array containing all objects in the scene with which the ray intersects
+        // var intersects = ray.intersectObjects(scene.children);
+        //
+        // // if there is one (or more) intersections
+        // if (intersects.length > 0) {
+        //     // if the closest object intersected is not the currently stored intersection object
+        //     if (intersects[0].object != intersected) {
+        //         // restore previous intersection object (if it exists) to its original color
+        //         if (intersected) {
+        //             if (intersected.material.color) {
+        //                 console.log(intersected);
+        //                 updatePointData(intersected.geometry.pointData);
+        //                 intersected.material.color.setHex(intersected.currentHex);
+        //             }
+        //         }
+        //         // store reference to closest object as current intersection object
+        //         intersected = intersects[0].object;
+        //
+        //         if (intersected) {
+        //             if (intersected.material.color) {
+        //                 // store color of closest object (for later restoration)
+        //                 intersected.currentHex = intersected.material.color.getHex();
+        //                 // set a new color for closest object
+        //                 intersected.material.color.setHex(0xFF3866);
+        //             }
+        //         }
+        //     }
+        // } else // there are no intersections
+        // {
+        //     // restore previous intersection object (if it exists) to its original color
+        //     if (intersected) {
+        //         if (intersected.material.color) {
+        //             intersected.material.color.setHex(intersected.currentHex);
+        //         }
+        //     }
+        //     // remove previous intersection object reference
+        //     //     by setting current intersection object to "nothing"
+        //     intersected = null;
+        // }
 
         zoom(curZoomSpeed);
 
@@ -459,8 +486,11 @@ DAT.Globe = function(container, opts) {
         this._time = t;
     });
 
-    this.addData = addData;
-    this.createPoints = createPoints;
+
+    this.addDataPoints = addDataPoints;
+
+    // this.addData = addData;
+    // this.createPoints = createPoints;
     this.renderer = renderer;
     this.scene = scene;
 

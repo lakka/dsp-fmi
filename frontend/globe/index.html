@@ -59,12 +59,13 @@
     #title {
       position: absolute;
       top: 20px;
-      width: 300px;
+      width: 320px;
       left: 20px;
       background-color: rgba(0,0,0,0.2);
       border-radius: 3px;
       font: 20px Georgia;
       padding: 10px;
+      display: inline-flex;
     }
 
     #pointData {
@@ -81,7 +82,6 @@
       cursor: pointer;
     }
 
-
     #ce span {
       display: none;
     }
@@ -94,6 +94,11 @@
       bottom: 15px;
       left: 20px;
       background: url(./ce.png);
+    }
+
+    #dataDate {
+      margin: 0 5px;
+      color: #46bda2;
     }
 
 
@@ -113,7 +118,7 @@
 </div>
 
 <div id="title">
-  Meteorological Data
+  Satellite Ozone Data | <p id="dataDate"></p>
 </div>
 
 <div class="buttonHolder">
@@ -173,6 +178,7 @@
         day = ("0" + day).slice(-2);
 
         console.log('Loading data from ' + './' + year + '-' + month + '-' + day + '.json');
+        document.getElementById("dataDate").innerHTML = month + "." + day + "." + year;
 
 //        xhr.open('GET', '1022.json', true);
         xhr.open('GET', 'http://fmi-ds-backend.h4x0rb34.rs/' + year + '-' + month + '-' + day + '.json', true);

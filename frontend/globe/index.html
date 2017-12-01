@@ -67,6 +67,8 @@
     }
 
     #pointData {
+      font-size: 13px !important;
+      font-family: monospace;
       line-height: 26px;
       height: 30px;
       font-weight: 600;
@@ -74,7 +76,7 @@
       font-size: 11px;
       float: left;
       padding: 0 10px;
-      color: rgb(255, 56, 102);
+      color: rgb(72, 86, 105);
       cursor: pointer;
     }
 
@@ -105,7 +107,7 @@
 </div>
 
 <div id="currentInfo">
-  <span id="pointData" style="font-size : 14px">Satellite data</span>
+  <span id="pointData">No data</span>
 </div>
 
 <div id="title">
@@ -125,7 +127,9 @@
 
         updatePointData = function(data) {
             panel = document.getElementById('pointData');
-            panel.innerHTML = "Lat: " + data.lat + ", Lng: " + data.lng + ", Int: " + data.int;
+            panel.innerHTML = "Lat: " + parseFloat(data.lat).toFixed(3) +
+                            ", Lng: " + parseFloat(data.lng).toFixed(3) +
+                            ", Val: " + parseFloat(data.val).toFixed(3);
         };
 
         var container = document.getElementById('container');
@@ -143,6 +147,7 @@
 
         console.log('Loading data from ' + './' + year + '-' + month + '-' + day + '.json');
 
+//        xhr.open('GET', '1022.json', true);
         xhr.open('GET', 'http://fmi-ds-backend.h4x0rb34.rs/' + year + '-' + month + '-' + day + '.json', true);
 
         n_points = 0;

@@ -88,7 +88,9 @@ DAT.Globe = function(container, opts) {
 
     var point_size = 0.7;
 
-    var intersected;
+    var raycaster, intersects, INTERSECTED;
+
+    var prevPoint, prevColors, prevInter = null;
 
     function init() {
 
@@ -119,9 +121,9 @@ DAT.Globe = function(container, opts) {
 
         });
 
-        mesh = new THREE.Mesh(geometry, material);
-        mesh.rotation.y = Math.PI;
-        scene.add(mesh);
+        globeMesh = new THREE.Mesh(geometry, material);
+        globeMesh.rotation.y = Math.PI;
+        scene.add(globeMesh);
 
         shader = Shaders['atmosphere'];
         uniforms = THREE.UniformsUtils.clone(shader.uniforms);
@@ -146,7 +148,6 @@ DAT.Globe = function(container, opts) {
         geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0,0,-0.5));
 
         point = new THREE.Mesh(geometry);
-
 
         renderer = new THREE.WebGLRenderer({antialias: true});
         renderer.setSize(w, h);
@@ -281,6 +282,7 @@ DAT.Globe = function(container, opts) {
 
         var geometry = new THREE.Geometry();
         var material = new THREE.PointsMaterial( { size: 5,  vertexColors: THREE.VertexColors } );
+        geometry.dat = []
 
         for (var i = 0; i < data.length; i++) {
             for (var j = 0; j < data[i].data.length; j++) {
@@ -305,10 +307,13 @@ DAT.Globe = function(container, opts) {
 
                 geometry.vertices.push( vertex );
                 geometry.colors.push( colors );
+                geometry.dat.push( { lat: lat, lng: lng, val: dataPoint[2] } )
             }
         }
 
-        scene.add(  new THREE.Points( geometry, material ) );
+        points = new THREE.Points( geometry, material )
+
+        scene.add( points );
 
     }
 
@@ -394,50 +399,48 @@ DAT.Globe = function(container, opts) {
 
     function render() {
 
-        // //   and direction into the scene (camera direction)
-        // var vector = new THREE.Vector3(mouse.x, mouse.y, 1);
-        // vector.unproject(camera);
-        // var ray = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
-        //
-        // // create an array containing all objects in the scene with which the ray intersects
-        // var intersects = ray.intersectObjects(scene.children);
-        //
-        // // if there is one (or more) intersections
-        // if (intersects.length > 0) {
-        //     // if the closest object intersected is not the currently stored intersection object
-        //     if (intersects[0].object != intersected) {
-        //         // restore previous intersection object (if it exists) to its original color
-        //         if (intersected) {
-        //             if (intersected.material.color) {
-        //                 console.log(intersected);
-        //                 updatePointData(intersected.geometry.pointData);
-        //                 intersected.material.color.setHex(intersected.currentHex);
-        //             }
-        //         }
-        //         // store reference to closest object as current intersection object
-        //         intersected = intersects[0].object;
-        //
-        //         if (intersected) {
-        //             if (intersected.material.color) {
-        //                 // store color of closest object (for later restoration)
-        //                 intersected.currentHex = intersected.material.color.getHex();
-        //                 // set a new color for closest object
-        //                 intersected.material.color.setHex(0xFF3866);
-        //             }
-        //         }
-        //     }
-        // } else // there are no intersections
-        // {
-        //     // restore previous intersection object (if it exists) to its original color
-        //     if (intersected) {
-        //         if (intersected.material.color) {
-        //             intersected.material.color.setHex(intersected.currentHex);
-        //         }
-        //     }
-        //     // remove previous intersection object reference
-        //     //     by setting current intersection object to "nothing"
-        //     intersected = null;
-        // }
+        //   and direction into the scene (camera direction)
+        var vector = new THREE.Vector3(mouse.x, mouse.y, 1);
+        vector.unproject(camera);
+
+        var raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
+
+        var geometry = points.geometry;
+        raycaster.setFromCamera( mouse, camera );
+        intersects = raycaster.intersectObject( points );
+        intersectsGlobe = raycaster.intersectObject( globeMesh );
+
+
+        if ( intersects.length > 0 ) {
+
+            if ( INTERSECTED != intersects[ 0 ].index ) {
+
+                if (prevPoint) {
+                    prevPoint.colors[prevInter] = prevColors;
+                    prevPoint.colorsNeedUpdate = true;
+                    prevColors, prevInter, prevPoint  = null;
+                }
+
+                INTERSECTED = intersects[0].index;
+
+                updatePointData(geometry.dat[INTERSECTED]);
+
+                prevColors = intersects[0].object.geometry.colors[INTERSECTED];
+                prevInter  = INTERSECTED;
+                prevPoint  = intersects[0].object.geometry;
+                intersects[0].object.geometry.colors[INTERSECTED] = 0xFF3866;
+                intersects[0].object.geometry.colorsNeedUpdate = true;
+            }
+
+        } else if ( INTERSECTED !== null ) {
+            INTERSECTED = null;
+
+            if (prevPoint) {
+                prevPoint.colors[prevInter] = prevColors;
+                prevPoint.colorsNeedUpdate = true;
+                prevColors, prevInter, prevPoint = null;
+            }
+        }
 
         zoom(curZoomSpeed);
 

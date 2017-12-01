@@ -3,7 +3,8 @@
 <head>
   <title>WebGL Globe</title>
   <meta charset="utf-8">
-  <style type="text/css">
+  <link rel="stylesheet" href="./style/buttons.css">
+  <style>
     html {
       height: 100%;
     }
@@ -97,6 +98,7 @@
 
 
   </style>
+
 </head>
 <body>
 
@@ -114,6 +116,11 @@
   Meteorological Data
 </div>
 
+<div class="buttonHolder">
+  <a href="#" id="satBtn" class="button satellite" onclick="satelliteButtonClick()"></a>
+  <a href="#" id="grdBtn" class="button grid" onclick="gridButtonClick()"></a>
+</div>
+
 <script type="text/javascript" src="./third-party/"></script>
 <script type="text/javascript" src="./third-party/three.js"></script>
 <script type="text/javascript" src="./third-party/Tween.js"></script>
@@ -125,11 +132,31 @@
         Detector.addGetWebGLMessage();
     } else {
 
+        satBtn = false;
+        grdBtn = true;
+
         updatePointData = function(data) {
             panel = document.getElementById('pointData');
             panel.innerHTML = "Lat: " + parseFloat(data.lat).toFixed(3) +
-                            ", Lng: " + parseFloat(data.lng).toFixed(3) +
-                            ", Val: " + parseFloat(data.val).toFixed(3);
+                ", Lng: " + parseFloat(data.lng).toFixed(3) +
+                ", Val: " + parseFloat(data.val).toFixed(3);
+        };
+
+        satelliteButtonClick = function() {
+            satBtn = !satBtn;
+            points.visible = satBtn;
+
+            if (satBtn)  document.getElementById("satBtn").classList.add("satellite_active");
+            if (!satBtn) document.getElementById("satBtn").classList.remove("satellite_active");
+        };
+
+        gridButtonClick = function() {
+            grdBtn = !grdBtn;
+            minGrid.visible = grdBtn;
+            maxGrid.visible = grdBtn;
+
+            if (grdBtn)  document.getElementById("grdBtn").classList.add("grid_active");
+            if (!grdBtn) document.getElementById("grdBtn").classList.remove("grid_active");
         };
 
         var container = document.getElementById('container');
@@ -161,24 +188,18 @@
                     globe.animate();
 //                    console.log("Loaded " + n_points + " points!");
                     document.body.style.backgroundImage = 'none'; // remove loading
+
+                    globe.createGrid(2);
+
+                    // Initial button state
+                    satelliteButtonClick();
+                    gridButtonClick();
                 }
             }
         };
 
         xhr.send(null);
     }
-
-    //
-    //    addPoints = function(points) {
-    //        for(var i = 0; i<points.length; i++) {
-    //            var y = document.getElementById('year'+years[i]);
-    //            y.addEventListener('mouseover', settime(globe,i), false);
-    //        }
-    //    };
-    //
-    //    addPoint = function(point) {
-    //
-    //    };
 
 
 </script>

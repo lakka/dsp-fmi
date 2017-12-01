@@ -282,7 +282,7 @@ DAT.Globe = function(container, opts) {
 
         var geometry = new THREE.Geometry();
         var material = new THREE.PointsMaterial( { size: 5,  vertexColors: THREE.VertexColors } );
-        geometry.dat = []
+        geometry.dat = [];
 
         for (var i = 0; i < data.length; i++) {
             for (var j = 0; j < data[i].data.length; j++) {
@@ -311,9 +311,59 @@ DAT.Globe = function(container, opts) {
             }
         }
 
-        points = new THREE.Points( geometry, material )
+        points = new THREE.Points( geometry, material );
 
         scene.add( points );
+
+    }
+
+    function createGrid(gS) {
+
+        var locatePoint = function(x, y, geometry) {
+            lat = y * gS;
+            lng = x * gS;
+
+            // console.log((dataPoint[2] - 200) / 300);
+
+            var phi   = (90  - lat) * Math.PI / 180;
+            var theta = (180 - lng) * Math.PI / 180;
+
+            var vertex   = new THREE.Vector3();
+
+            vertex.x = 200 * Math.sin(phi) * Math.cos(theta);
+            vertex.y = 200 * Math.cos(phi);
+            vertex.z = 200 * Math.sin(phi) * Math.sin(theta);
+
+            colors = new THREE.Color("#ffffff");
+
+            geometry.vertices.push( vertex );
+            geometry.colors.push( colors );
+
+            return geometry
+        };
+
+        var maxGeometry = new THREE.Geometry();
+        var minGeometry = new THREE.Geometry();
+        var maxMaterial = new THREE.PointsMaterial( { size: 1.0,  vertexColors: THREE.VertexColors } );
+        var minMaterial = new THREE.PointsMaterial( { size: 0.3,    vertexColors: THREE.VertexColors } );
+
+        for (var x = -180 / gS; x < 180 / gS; x++) {
+            for (var y = -90 / gS; y < 90 / gS; y++) {
+
+                maxGeometry = locatePoint(x, y, maxGeometry);
+
+                minGeometry = locatePoint(x + gS/3, y, minGeometry);
+                minGeometry = locatePoint(x - gS/3, y, minGeometry);
+                minGeometry = locatePoint(x, y + gS/3, minGeometry);
+                minGeometry = locatePoint(x, y - gS/3, minGeometry);
+            }
+        }
+
+        maxGrid = new THREE.Points( maxGeometry, maxMaterial );
+        minGrid = new THREE.Points( minGeometry, minMaterial );
+
+        scene.add( maxGrid );
+        scene.add( minGrid );
 
     }
 
@@ -489,9 +539,8 @@ DAT.Globe = function(container, opts) {
         this._time = t;
     });
 
-
     this.addDataPoints = addDataPoints;
-
+    this.createGrid = createGrid;
     // this.addData = addData;
     // this.createPoints = createPoints;
     this.renderer = renderer;

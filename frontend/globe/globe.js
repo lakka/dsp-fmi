@@ -125,6 +125,15 @@ DAT.Globe = function(container, opts) {
         globeMesh.rotation.y = Math.PI;
         scene.add(globeMesh);
 
+
+        var material = new THREE.MeshStandardMaterial({ color: "#202020", transparent: true, side: THREE.DoubleSide, alphaTest: 0.5 });
+        var alphaMap = new THREE.TextureLoader().load(imgDir+'worldEdges.png');
+        material.alphaMap = alphaMap;
+        globeEdgeMesh = new THREE.Mesh(geometry, material);
+        globeEdgeMesh.rotation.y = Math.PI;
+        globeEdgeMesh.scale.set( 1.003, 1.003, 1.003);
+        scene.add(globeEdgeMesh);
+
         shader = Shaders['atmosphere'];
         uniforms = THREE.UniformsUtils.clone(shader.uniforms);
 

@@ -3,7 +3,7 @@ import sys
 import numpy as np
 from datetime import datetime as dt
 from sklearn.gaussian_process import GaussianProcessRegressor as GPR
-import preprocess
+from preprocess import read_data, data2grid, take_n_last_days
 
 def test(model, X_test, y_test):
     print('Testing...', end='')
@@ -42,21 +42,11 @@ def train_and_test(X, y):
 
     return (model, score, len(X_train))
 
-data = preprocess.read()
-times = data[:,2]
+data = read_data()
 
-days = 3
-timecap = int(dt.utcnow().strftime('%s'))-(3600*24*days) # take only n last days of data
-data = data[times > timecap]
-lat = data[:,0]
-lng = data[:,1]
-o3 = data[:,3]
-
-# generate grid from coordinates
-lats = range(-90,90,2)
-lngs = range(-180,180,2)
-l_slices = [data[(lat > l) & (lat < l+2)] for l in lats]
-grid = np.array([[las[(las[:,1] > l) & (las[:,1] < l+2)] for l in lngs] for las in l_slices])
+days = 2
+data = take_n_last_days(data, days)
+grid = data2grid(data)
 
 models = [[None]*180]*90
 scores = np.zeros([1,2])

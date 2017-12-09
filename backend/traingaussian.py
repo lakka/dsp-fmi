@@ -51,27 +51,28 @@ data = take_n_last_days(data, days)
 model, scalerX, scalery, score, n = train_and_test(data[:,0:2], data[:,3])
 
 n_samples = 20
+n_splits = 20
+dims = (180, 360,1)
 def predict_all(model, scaler):
-    lats = np.arange(-89, 91, 2)
-    lats = np.repeat(lats, 180).reshape(-1,1)
-    lngs = np.arange(-179, 181, 2)
-    lngs = np.tile(lngs.reshape(-1,1), (90,1))
-    coords = np.concatenate((lats, lngs), axis=1).astype('f')
+    lats = np.arange(-89.5, 90.5, 1)
+    lats = np.repeat(lats, dims[1]).reshape(-1,1)
+    lngs = np.arange(-179.5, 180.5, 1)
+    lngs = np.tile(lngs.reshape(-1,1), (dims[0], 1))
+    coords = np.concatenate((lats, lngs), axis=1)
     out = []
-    for m in list(enumerate(np.split(coords, 10, axis=0))):
-        if verbose: print('%d/10' % m[0])
-        normcoords = scaler.transform(m[1])
+    for m in list(enumerate(np.split(coords, n_splits, axis=0))):
+        if verbose: print('%d/%d' % (m[0]+1, n_splits))
+        normcoords = scaler.transform(m[1]).astype('float32')
         samples = model.sample_y(normcoords, n_samples)
         out.append(samples)
-    return np.reshape(out, (1,90,180,n_samples))[0]
+    return np.reshape(out, (1,dims[0],dims[1],n_samples))[0]
 
 predictions = predict_all(model, scalerX)
 predictions = scalery.inverse_transform(predictions)
 
-final_shape = (90,180,1)
-mins = np.min(predictions, axis=2).reshape(final_shape)
-maxes = np.max(predictions, axis=2).reshape(final_shape)
-means = np.mean(predictions, axis=2).reshape(final_shape)
+mins = np.min(predictions, axis=2).reshape(dims)
+maxes = np.max(predictions, axis=2).reshape(dims)
+means = np.mean(predictions, axis=2).reshape(dims)
 d = np.round(np.concatenate((mins, maxes, means), axis=2), 1)
 
 dump(d)

@@ -58,11 +58,11 @@ def predict_all(model, scaler):
     lats = np.repeat(lats, dims[1]).reshape(-1,1)
     lngs = np.arange(-179.5, 180.5, 1)
     lngs = np.tile(lngs.reshape(-1,1), (dims[0], 1))
-    coords = np.concatenate((lats, lngs), axis=1)
+    coords = np.concatenate((lats, lngs), axis=1).astype('f')
     out = []
     for m in list(enumerate(np.split(coords, n_splits, axis=0))):
         if verbose: print('%d/%d' % (m[0]+1, n_splits))
-        normcoords = scaler.transform(m[1]).astype('float32')
+        normcoords = scaler.transform(m[1])
         samples = model.sample_y(normcoords, n_samples)
         out.append(samples)
     return np.reshape(out, (1,dims[0],dims[1],n_samples))[0]

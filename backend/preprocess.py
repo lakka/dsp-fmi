@@ -2,7 +2,7 @@ from __future__ import print_function
 import sys
 import json
 import numpy as np
-from os.path import isfile, join
+from os.path import isfile, islink, join
 from os import listdir
 from datetime import datetime as dt
 
@@ -11,7 +11,7 @@ def read_data():
     print('Reading data...', end='')
     sys.stdout.flush()
     all_data = []
-    onlyfiles = [join(path,f) for f in listdir(path) if isfile(join(path, f)) and '.json' in f]
+    onlyfiles = [join(path,f) for f in listdir(path) if isfile(join(path, f)) and not islink(join(path, f)) and '.json' in f]
     for fname in onlyfiles:
 	all_data += [zip(d['data'], [[dt.strptime(d['time'], '%Y-%m-%dT%H:%M:%S.%fZ').strftime('%s')]]*len(d['data'])) for d in json.load(open(fname, 'r')) if len(d['time']) > 21]
 

@@ -5,8 +5,16 @@ import sklearn.preprocessing as preprocessing
 from sklearn.gaussian_process import GaussianProcessRegressor as GPR
 from preprocess import random_sets,read_data, take_n_last_days
 import json
+from os.path import join
+from datetime import datetime as dt
 
 days = 1
+date_long = dt.utcnow().strftime('%Y-%m-%d')
+
+def dump(d):
+    d = d.astype('|S5').tolist()
+    with open(join('./public/predictions/',date_long+'.json'), 'w+') as fp:
+        json.dump(d, fp)
 
 def test(model, X_test, y_test):
     print('Testing...', end='')
@@ -36,7 +44,7 @@ def train_and_test(X, y):
 data = read_data()
 
 data = take_n_last_days(data, days)
-model, scaler, scalery, score, n = train_and_test(data[:,0:2], data[:,3])
+model, scalerX, scalery, score, n = train_and_test(data[:,0:2], data[:,3])
 
 n_samples = 20
 def predict_all(model, scaler):
@@ -53,21 +61,14 @@ def predict_all(model, scaler):
         out.append(samples)
     return np.reshape(out, (1,90,180,n_samples))[0]
 
-predictions = predict_all(model, scaler)
+predictions = predict_all(model, scalerX)
 predictions = scalery.inverse_transform(predictions)
 
 final_shape = (90,180,1)
-maxes = np.max(predictions, axis=2).reshape(final_shape)
 mins = np.min(predictions, axis=2).reshape(final_shape)
+maxes = np.max(predictions, axis=2).reshape(final_shape)
 means = np.mean(predictions, axis=2).reshape(final_shape)
+d = np.round(np.concatenate((mins, maxes, means), axis=2), 1)
 
-def dump(d):
-    d = d.astype('|S8').tolist()
-    with open('preds.json', 'w+') as fp:
-        json.dump(d, fp)
+dump(d)
 
-
-#data = data[data[:,0].argsort()] # sort by latitude
-#data = np.array_split(data, n_models, axis=0)
-#metadata = np.asarray([(a.min(axis=0)[0],a.max(axis=0)[0]) for a in data])
-#data = data[data[:,2].argsort()] # sort by time

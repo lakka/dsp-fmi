@@ -39,4 +39,4 @@ for fname in onlyfiles:
 
 print "Creating a json with %s time entries." % len(all_data)
 with open(join('./public',date_long+'.json'), 'w+') as fp:
-    json.dump(all_data, fp)
+    json.dump(all_data, fp, separators=(',',':'))

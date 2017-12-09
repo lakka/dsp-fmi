@@ -18,7 +18,7 @@ date_long = dt.utcnow().strftime('%Y-%m-%d')
 def dump(d):
     d = d.astype('|S5').tolist()
     with open(join('./public/predictions/',date_long+'.json'), 'w+') as fp:
-        json.dump(d, fp)
+        json.dump(d, fp, separators=(',',':'))
 
 def test(model, X_test, y_test):
     if verbose: print('Testing...', end='')

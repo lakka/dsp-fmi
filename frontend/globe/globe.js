@@ -106,7 +106,7 @@ DAT.Globe = function(container, opts) {
 
         scene = new THREE.Scene();
 
-        var geometry = new THREE.SphereGeometry(200, 40, 30);
+        var geometry = new THREE.SphereGeometry(200, 40, 60);
 
         shader = Shaders['earth'];
         uniforms = THREE.UniformsUtils.clone(shader.uniforms);
@@ -124,7 +124,6 @@ DAT.Globe = function(container, opts) {
         globeMesh = new THREE.Mesh(geometry, material);
         globeMesh.rotation.y = Math.PI;
         scene.add(globeMesh);
-
 
         var material = new THREE.MeshStandardMaterial({ color: "#202020", transparent: true, side: THREE.DoubleSide, alphaTest: 0.5 });
         var alphaMap = new THREE.TextureLoader().load(imgDir+'worldEdges.png');
@@ -196,41 +195,41 @@ DAT.Globe = function(container, opts) {
         mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
     }
 
-    function addData(data, opts) {
-
-
-        var lat, lng, size, color, i, step, colorFnWrapper;
-
-        opts.animated = opts.animated || false;
-        this.is_animated = opts.animated;
-        opts.format = opts.format || 'magnitude'; // other option is 'legend'
-        if (opts.format === 'magnitude') {
-            step = 3;
-            // colorFnWrapper = function(data, i) { return colorFn((data[i+2] - 200) / 290);}
-        } else if (opts.format === 'legend') {
-            step = 4;
-            colorFnWrapper = function(data, i) { return colorFn(data[i+2]); }
-        } else {
-            throw('error: format not supported: '+opts.format);
-        }
-
-
-        // subgeo = new THREE.Geometry();
-
-        lat = data[0];
-        lng = data[1];
-        // color = colorFnWrapper(data,0);
-        color = 0
-        size = 0.2;
-        // subgeo.pointData = { 'lat' : data[0], 'lng' : data[1], 'int' : data[2] };
-        addPoint(lat, lng, size, color, subgeo);
-        if (opts.animated) {
-            this._baseGeometry.morphTargets.push({'name': opts.name, vertices: subgeo.vertices});
-        } else {
-            this._baseGeometry = subgeo;
-        }
-
-    }
+    // function addData(data, opts) {
+    //
+    //
+    //     var lat, lng, size, color, i, step, colorFnWrapper;
+    //
+    //     opts.animated = opts.animated || false;
+    //     this.is_animated = opts.animated;
+    //     opts.format = opts.format || 'magnitude'; // other option is 'legend'
+    //     if (opts.format === 'magnitude') {
+    //         step = 3;
+    //         // colorFnWrapper = function(data, i) { return colorFn((data[i+2] - 200) / 290);}
+    //     } else if (opts.format === 'legend') {
+    //         step = 4;
+    //         colorFnWrapper = function(data, i) { return colorFn(data[i+2]); }
+    //     } else {
+    //         throw('error: format not supported: '+opts.format);
+    //     }
+    //
+    //
+    //     // subgeo = new THREE.Geometry();
+    //
+    //     lat = data[0];
+    //     lng = data[1];
+    //     // color = colorFnWrapper(data,0);
+    //     color = 0;
+    //     size = 0.2;
+    //     // subgeo.pointData = { 'lat' : data[0], 'lng' : data[1], 'int' : data[2] };
+    //     addPoint(lat, lng, size, color, subgeo);
+    //     if (opts.animated) {
+    //         this._baseGeometry.morphTargets.push({'name': opts.name, vertices: subgeo.vertices});
+    //     } else {
+    //         this._baseGeometry = subgeo;
+    //     }
+    //
+    // }
 
     // function createPoints() {
     //     if (this._baseGeometry !== undefined) {
@@ -296,7 +295,7 @@ DAT.Globe = function(container, opts) {
         for (var i = 0; i < data.length; i++) {
             for (var j = 0; j < data[i].data.length; j++) {
 
-                dataPoint = [].concat.apply([], data[i].data[j])
+                dataPoint = [].concat.apply([], data[i].data[j]);
 
                 lat = dataPoint[0];
                 lng = dataPoint[1];
@@ -308,9 +307,9 @@ DAT.Globe = function(container, opts) {
 
                 var vertex   = new THREE.Vector3();
 
-                vertex.x = 200 * Math.sin(phi) * Math.cos(theta);
-                vertex.y = 200 * Math.cos(phi);
-                vertex.z = 200 * Math.sin(phi) * Math.sin(theta);
+                vertex.x = 200.4 * Math.sin(phi) * Math.cos(theta);
+                vertex.y = 200.4 * Math.cos(phi);
+                vertex.z = 200.4 * Math.sin(phi) * Math.sin(theta);
 
                 colors = colorFn((dataPoint[2] - 200) / 300);
 
@@ -321,58 +320,116 @@ DAT.Globe = function(container, opts) {
         }
 
         points = new THREE.Points( geometry, material );
-
         scene.add( points );
-
     }
 
-    function createGrid(gS) {
+    function createGrid(preds, gS) {
 
-        var locatePoint = function(x, y, geometry) {
+        var locatePoint = function(x, y, z_off) {
+
+            z_off = z_off || 0;
+
             lat = y * gS;
             lng = x * gS;
-
-            // console.log((dataPoint[2] - 200) / 300);
 
             var phi   = (90  - lat) * Math.PI / 180;
             var theta = (180 - lng) * Math.PI / 180;
 
             var vertex   = new THREE.Vector3();
 
-            vertex.x = 200 * Math.sin(phi) * Math.cos(theta);
-            vertex.y = 200 * Math.cos(phi);
-            vertex.z = 200 * Math.sin(phi) * Math.sin(theta);
+            vertex.x = (200 + z_off) * Math.sin(phi) * Math.cos(theta);
+            vertex.y = (200 + z_off) * Math.cos(phi);
+            vertex.z = (200 + z_off) * Math.sin(phi) * Math.sin(theta);
+
+            return vertex
+
+        };
+
+        var createPoint = function(x, y, geometry) {
 
             colors = new THREE.Color("#ffffff");
 
-            geometry.vertices.push( vertex );
+            geometry.vertices.push( locatePoint(x, y, 0.5) );
             geometry.colors.push( colors );
 
             return geometry
         };
 
+        var createFace = function(x, y, geometry) {
+
+            off = geometry.vertices.length;
+
+            x_ = x - 180 / gS;
+            y_ = y - 90  / gS;
+
+            geometry.vertices.push( locatePoint(x_    , y_    , 0.1) );
+            geometry.vertices.push( locatePoint(x_ + 1, y_    , 0.1) );
+            geometry.vertices.push( locatePoint(x_    , y_ + 1, 0.1) );
+            geometry.vertices.push( locatePoint(x_ + 1, y_ + 1, 0.1) );
+
+            //create a new face using vertices 0, 1, 2
+            var faceA = new THREE.Face3( off + 2, off + 1, off + 3 );
+            var faceB = new THREE.Face3( off + 0, off + 1, off + 2 );
+
+            opacity = Math.max(0, (preds[y][x][1] - preds[y][x][0]) / 200);
+
+            color = colorFn((preds[y][x][2] - 200) / 300).lerp(new THREE.Color("#FFFFFF"), opacity);
+
+            faceA.color = color;
+            faceB.color = color;
+
+            //add the face to the geometry's faces array
+            geometry.faces.push( faceA );
+            geometry.faces.push( faceB );
+
+            return geometry
+
+        };
+
         var maxGeometry = new THREE.Geometry();
         var minGeometry = new THREE.Geometry();
+        var faceGeom    = new THREE.Geometry();
         var maxMaterial = new THREE.PointsMaterial( { size: 1.0,  vertexColors: THREE.VertexColors } );
-        var minMaterial = new THREE.PointsMaterial( { size: 0.3,    vertexColors: THREE.VertexColors } );
+        var minMaterial = new THREE.PointsMaterial( { size: 0.6,  vertexColors: THREE.VertexColors } );
+
 
         for (var x = -180 / gS; x < 180 / gS; x++) {
             for (var y = -90 / gS; y < 90 / gS; y++) {
 
-                maxGeometry = locatePoint(x, y, maxGeometry);
+                maxGeometry = createPoint(x, y, maxGeometry);
 
-                minGeometry = locatePoint(x + gS/3, y, minGeometry);
-                minGeometry = locatePoint(x - gS/3, y, minGeometry);
-                minGeometry = locatePoint(x, y + gS/3, minGeometry);
-                minGeometry = locatePoint(x, y - gS/3, minGeometry);
+                minGeometry = createPoint(x + 1/3, y, minGeometry);
+                minGeometry = createPoint(x - 1/3, y, minGeometry);
+                minGeometry = createPoint(x, y + 1/3, minGeometry);
+                minGeometry = createPoint(x, y - 1/3, minGeometry);
+
+            }
+        }
+
+        for (var x = 0 / gS; x < 360 / gS; x++) {
+            for (var y = 0 / gS; y < 180 / gS; y++) {
+
+                faceGeom = createFace(x, y, faceGeom);
+
             }
         }
 
         maxGrid = new THREE.Points( maxGeometry, maxMaterial );
         minGrid = new THREE.Points( minGeometry, minMaterial );
 
+        var material = new THREE.MeshBasicMaterial( { vertexColors : THREE.FaceColors, opacity : 0.75, transparent: true } );
+
+        faceGeom.colorsNeedUpdate = true;
+
+        //the face normals and vertex normals can be calculated automatically if not supplied above
+        faceGeom.computeFaceNormals();
+        faceGeom.computeVertexNormals();
+
+        datGrid = new THREE.Mesh( faceGeom, material );
+
         scene.add( maxGrid );
         scene.add( minGrid );
+        scene.add( datGrid );
 
     }
 

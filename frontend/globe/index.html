@@ -156,6 +156,7 @@
             grdBtn = !grdBtn;
             minGrid.visible = grdBtn;
             maxGrid.visible = grdBtn;
+            datGrid.visible = grdBtn;
 
             if (grdBtn)  document.getElementById("grdBtn").classList.add("grid_active");
             if (!grdBtn) document.getElementById("grdBtn").classList.remove("grid_active");
@@ -168,7 +169,7 @@
         TWEEN.start();
 
         xhr = new XMLHttpRequest();
-        var year = new Date().getFullYear()
+        var year = new Date().getFullYear();
         var month = new Date().getUTCMonth() + 1;
         month = ("0" + month).slice(-2);
         var day = new Date().getUTCDate();
@@ -189,19 +190,37 @@
                     window.data = data;
                     globe.addDataPoints(data);
                     globe.animate();
-//                    console.log("Loaded " + n_points + " points!");
                     document.body.style.backgroundImage = 'none'; // remove loading
 
-                    globe.createGrid(2);
+                    var xhr2 = new XMLHttpRequest();
 
-                    // Initial button state
-                    satelliteButtonClick();
-                    gridButtonClick();
+                    xhr2.open('GET', 'http://fmi-ds-backend.h4x0rb34.rs/predictions/' + year + '-' + month + '-' + day + '.json', true);
+//                    xhr2.open('GET', "2017-12-09.json");
+
+                    xhr2.onreadystatechange = function(e) {
+                        if (xhr2.readyState === 4) {
+                            if (xhr2.status === 200) {
+                                var preds = JSON.parse(xhr2.responseText);
+                                window.preds = preds;
+
+                                gS = Math.floor(180 / preds.length);
+                                globe.createGrid(preds, gS);
+
+                                // Initial button state
+                                satelliteButtonClick();
+                                gridButtonClick();
+                            }
+                        }
+                    };
+
+                    xhr2.send(null);
+
                 }
             }
         };
 
         xhr.send(null);
+
     }
 
 

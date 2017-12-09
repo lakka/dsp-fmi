@@ -1,4 +1,6 @@
 from __future__ import print_function
+import warnings
+warnings.filterwarnings("ignore", category=RuntimeWarning)
 import sys
 import numpy as np
 import sklearn.preprocessing as preprocessing
@@ -7,6 +9,8 @@ from preprocess import random_sets,read_data, take_n_last_days
 import json
 from os.path import join
 from datetime import datetime as dt
+
+verbose=False if len(sys.argv) > 1 and sys.argv[1] == '-p' else True
 
 days = 1
 date_long = dt.utcnow().strftime('%Y-%m-%d')
@@ -17,10 +21,10 @@ def dump(d):
         json.dump(d, fp)
 
 def test(model, X_test, y_test):
-    print('Testing...', end='')
+    if verbose: print('Testing...', end='')
     sys.stdout.flush()
     score = model.score(X_test, y_test)
-    print(' R-squared: %f' % score)
+    print(' R^2: %f' % score)
     return score
 
 def train_and_test(X, y):
@@ -35,7 +39,7 @@ def train_and_test(X, y):
     print('Training (n train %d, n test %d)...' % (len(X_train),len(X_test)), end='')
     sys.stdout.flush()
     model = gpr.fit(X_train, y_train)
-    print(' Done')
+    if verbose: print(' Done')
 
     score = test(model, X_test, y_test)
 
@@ -55,7 +59,7 @@ def predict_all(model, scaler):
     coords = np.concatenate((lats, lngs), axis=1).astype('f')
     out = []
     for m in list(enumerate(np.split(coords, 10, axis=0))):
-        print('%d/10' % m[0])
+        if verbose: print('%d/10' % m[0])
         normcoords = scaler.transform(m[1])
         samples = model.sample_y(normcoords, n_samples)
         out.append(samples)

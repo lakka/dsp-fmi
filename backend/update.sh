@@ -5,5 +5,10 @@ STAT=$(stat -t data)
 python ftpfetch.py
 if [[ $STAT != $(stat -t data) ]]; then
     python parsehdf5.py
-    nice -n 19 python traingaussian.py -p
+    if [[ -e .train.pid ]]; then
+        kill $(cat .train.pid)
+        rm .train.pid
+    fi
+    nohup ./train.sh & > /dev/null
+    echo $! > .train.pid
 fi

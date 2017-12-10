@@ -12,6 +12,8 @@ function symlinklatest {
 
 mkdir -p data data-nasa
 mkdir -p public/predictions public-nasa
+mkdir -p public/logs
+
 STAT=$(stat -t data)
 python ftpfetch.py
 if [[ $STAT != $(stat -t data) ]]; then

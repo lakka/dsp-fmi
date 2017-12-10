@@ -31,8 +31,8 @@ def train_and_test(X, y):
     scalerX = preprocessing.StandardScaler().fit(X)
     y = y.reshape(-1,1)
     scalery = preprocessing.StandardScaler().fit(y)
-    X = scalerX.transform(X)
-    y = scalery.transform(y)
+    X = scalerX.transform(X).astype('float16')
+    y = scalery.transform(y).astype('float16')
     X_train, X_test, y_train, y_test = random_sets(X, y, len(X)/10)
 
     gpr = GPR(normalize_y=False, copy_X_train=False, n_restarts_optimizer=10, alpha=0.1)
@@ -62,7 +62,7 @@ def predict_all(model, scaler):
     out = []
     for m in list(enumerate(np.split(coords, n_splits, axis=0))):
         if verbose: print('%d/%d' % (m[0]+1, n_splits))
-        normcoords = scaler.transform(m[1])
+        normcoords = scaler.transform(m[1]).astype('float16')
         samples = model.sample_y(normcoords, n_samples)
         out.append(samples)
     return np.reshape(out, (1,dims[0],dims[1],n_samples))[0]

@@ -5,4 +5,4 @@ if [[ ! -d 'backend' ]]; then
     exit 1
 fi
 
-wget -mnd --accept '*.json' 'http://fmi-ds-backend.h4x0rb34.rs/' -P backend/public/
+wget -mnH --accept '*.json' 'http://fmi-ds-backend.h4x0rb34.rs/' -P backend/public/

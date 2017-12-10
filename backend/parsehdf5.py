@@ -2,10 +2,9 @@ import json
 import h5py
 from itertools import izip
 import numpy as np
-from datetime import datetime as dt
-from os.path import isfile, join
+from datetime import datetime as dt, timedelta
+from os.path import isfile, islink, join
 from os import listdir
-
 
 path = './data/'
 def parse_hdf5(fname):
@@ -30,10 +29,10 @@ def parse_hdf5(fname):
                 result[i]['data'].append([str(la),str(lo),str(o)])
     return result
 
-date = dt.utcnow().strftime('%m%d')
 date_long = dt.utcnow().strftime('%Y-%m-%d')
 all_data = []
-onlyfiles = [join(path,f) for f in listdir(path) if isfile(join(path, f)) and date in f]
+onlyfiles = [join(path,f) for f in listdir(path) if isfile(join(path, f)) and not islink(join(path, f)) and dt.strptime(f[49:-3], '%Ym%m%dt%H%M%S') > dt.now()-timedelta(1)]
+
 for fname in onlyfiles:
     all_data += parse_hdf5(fname)
 

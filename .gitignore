@@ -2,3 +2,6 @@ backend/data/*
 backend/public/*
 backend/config.ini
 *.pyc
+*.pid
+*.out
+*.log

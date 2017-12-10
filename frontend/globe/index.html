@@ -98,6 +98,44 @@
       color: #6fffde;
     }
 
+    #legend {
+      width: 500px;
+      height: 20px;
+      position: absolute;
+      bottom: 0;
+      margin: 35px auto;
+      left: 0;
+      right: 0;
+      border: solid 1px white;
+      -webkit-box-shadow: 0px 15px 21px -5px rgba(0,0,0,0.15);
+      -moz-box-shadow: 0px 15px 21px -5px rgba(0,0,0,0.15);
+      box-shadow: 0px 15px 21px -5px rgba(0,0,0,0.15);
+    }
+
+    #legendPointer {
+      width: 2px;
+      margin: 2px;
+      height: 16px;
+      background-color: white;
+      transition: left 0.2s;
+      opacity: 0.8;
+      position: absolute;
+      box-shadow: 2px 3px 10px 0px rgba(0, 0, 0, 0.55);
+    }
+
+    #legendNumbers {
+      display: inline-flex;
+      width: 582px;
+      position: absolute;
+      left: -40px;
+      font-size: 10px;
+      bottom: 18px;
+      color: #6b6b6b;
+    }
+
+    #legendNumbers * {
+      margin: auto;
+    }
 
   </style>
 
@@ -118,6 +156,11 @@
   Satellite Ozone Data | <p id="dataDate"></p>
 </div>
 
+<div id="legend">
+  <div id="legendPointer"></div>
+  <div id="legendNumbers"><p>200</p><p>250</p><p>300</p><p>350</p><p>400</p><p>450</p><p>500</p></div>
+</div>
+
 <div class="buttonHolder">
   <a href="#" id="satBtn" class="button satellite" onclick="satelliteButtonClick()"></a>
   <a href="#" id="grdBtn" class="button grid" onclick="gridButtonClick()"></a>
@@ -129,6 +172,34 @@
 <script type="text/javascript" src="./third-party/Detector.js"></script>
 <script type="text/javascript" src="./globe.js"></script>
 <script type="text/javascript">
+
+  var datGrid;
+  var points;
+
+  colorLegend = function() {
+
+      command = "linear-gradient(to right ";
+
+      var colorFn = function(x) {
+          x = (x - 200) / 300;
+          c = (0.6 - ( x * 0.5 )) * 360;
+          return c;
+      };
+
+      for (var i = 0; i <= 10; i++) {
+          per = 10 * i;
+          command += ", hsl(" + colorFn(200 + 400 * per / 100) + ", 100%, 50%) " + per + "%";
+      }
+
+      command += ")";
+      document.getElementById("legend").style.background = command;
+  };
+
+  updateLegendPointer = function(x) {
+      document.getElementById("legendPointer").style.left = Math.max(0, Math.min((x - 200) / 300 * 100, 99))  + "%"
+  };
+
+  colorLegend();
 
     if(!Detector.webgl){
         Detector.addGetWebGLMessage();
@@ -142,6 +213,13 @@
             panel.innerHTML = "Lat: " + parseFloat(data.lat).toFixed(3) +
                 ", Lng: " + parseFloat(data.lng).toFixed(3) +
                 ", Val: " + parseFloat(data.val).toFixed(3);
+        };
+
+        updateCellData = function(data) {
+            panel = document.getElementById('pointData');
+            panel.innerHTML = "Max: " + parseFloat(data.val[0]).toFixed(2) +
+                            ", Min: " + parseFloat(data.val[1]).toFixed(2) +
+                            ", Val: " + parseFloat(data.val[2]).toFixed(2);
         };
 
         satelliteButtonClick = function() {
@@ -206,9 +284,12 @@
                                 gS = Math.floor(180 / preds.length);
                                 globe.createGrid(preds, gS);
 
+                                if (datGrid) {
+                                    gridButtonClick();
+                                }
+
                                 // Initial button state
                                 satelliteButtonClick();
-                                gridButtonClick();
                             }
                         }
                     };

@@ -88,7 +88,7 @@ DAT.Globe = function(container, opts) {
 
     var point_size = 0.7;
 
-    var raycaster, intersects, INTERSECTED;
+    var raycaster, intersects, gridInters, INTERSECTED;
 
     var prevPoint, prevColors, prevInter = null;
 
@@ -182,6 +182,8 @@ DAT.Globe = function(container, opts) {
         container.addEventListener('mouseout', function() {
             overRenderer = false;
         }, false);
+
+
 
     }
 
@@ -378,6 +380,9 @@ DAT.Globe = function(container, opts) {
             faceA.color = color;
             faceB.color = color;
 
+            faceA.dat = { x: lat, y: lng, val: preds[y][x] };
+            faceB.dat = { x: lat, y: lng, val: preds[y][x] };
+
             //add the face to the geometry's faces array
             geometry.faces.push( faceA );
             geometry.faces.push( faceB );
@@ -408,9 +413,7 @@ DAT.Globe = function(container, opts) {
 
         for (var x = 0 / gS; x < 360 / gS; x++) {
             for (var y = 0 / gS; y < 180 / gS; y++) {
-
                 faceGeom = createFace(x, y, faceGeom);
-
             }
         }
 
@@ -430,7 +433,6 @@ DAT.Globe = function(container, opts) {
         scene.add( maxGrid );
         scene.add( minGrid );
         scene.add( datGrid );
-
     }
 
     function onMouseDown(event) {
@@ -447,6 +449,7 @@ DAT.Globe = function(container, opts) {
         targetOnDown.y = target.y;
 
         container.style.cursor = 'move';
+
     }
 
     function onMouseMove(event) {
@@ -460,6 +463,7 @@ DAT.Globe = function(container, opts) {
 
         target.y = target.y > PI_HALF ? PI_HALF : target.y;
         target.y = target.y < - PI_HALF ? - PI_HALF : target.y;
+
     }
 
     function onMouseUp(event) {
@@ -467,6 +471,24 @@ DAT.Globe = function(container, opts) {
         container.removeEventListener('mouseup', onMouseUp, false);
         container.removeEventListener('mouseout', onMouseOut, false);
         container.style.cursor = 'auto';
+
+        //   and direction into the scene (camera direction)
+        var vector = new THREE.Vector3(mouse.x, mouse.y, 1);
+        vector.unproject(camera);
+
+        var raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
+
+        raycaster.setFromCamera(mouse, camera);
+        intersects = raycaster.intersectObject(datGrid);
+
+        if ( intersects.length > 0 ) {
+            if ( INTERSECTED != intersects[ 0 ].object ) {
+                updateCellData(intersects[0].face.dat);
+                updateLegendPointer(parseFloat(intersects[0].face.dat.val[2]))
+            }
+        } else {
+            INTERSECTED = null;
+        }
     }
 
     function onMouseOut(event) {
@@ -522,10 +544,9 @@ DAT.Globe = function(container, opts) {
         var raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
 
         var geometry = points.geometry;
-        raycaster.setFromCamera( mouse, camera );
-        intersects = raycaster.intersectObject( points );
+        raycaster.setFromCamera(mouse, camera);
+        intersects = raycaster.intersectObject(points);
         intersectsGlobe = raycaster.intersectObject( globeMesh );
-
 
         if ( intersects.length > 0 ) {
 
@@ -540,6 +561,7 @@ DAT.Globe = function(container, opts) {
                 INTERSECTED = intersects[0].index;
 
                 updatePointData(geometry.dat[INTERSECTED]);
+                updateLegendPointer(geometry.dat[INTERSECTED].val);
 
                 prevColors = intersects[0].object.geometry.colors[INTERSECTED];
                 prevInter  = INTERSECTED;

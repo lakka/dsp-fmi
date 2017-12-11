@@ -373,7 +373,7 @@ DAT.Globe = function(container, opts) {
             var faceA = new THREE.Face3( off + 2, off + 1, off + 3 );
             var faceB = new THREE.Face3( off + 0, off + 1, off + 2 );
 
-            opacity = Math.max(0, (preds[y][x][1] - preds[y][x][0]) / 200);
+            opacity = Math.max(0, (preds[y][x][1] - preds[y][x][0]) / 225);
 
             color = colorFn((preds[y][x][2] - 200) / 300).lerp(new THREE.Color("#FFFFFF"), opacity);
 

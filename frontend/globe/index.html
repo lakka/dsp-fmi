@@ -240,6 +240,16 @@
             if (!grdBtn) document.getElementById("grdBtn").classList.remove("grid_active");
         };
 
+        function getParameterByName(name, url) {
+            if (!url) url = window.location.href;
+            name = name.replace(/[\[\]]/g, "\\$&");
+            var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+                results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, " "));
+        }
+
         var container = document.getElementById('container');
         var globe = new DAT.Globe(container);
 
@@ -247,11 +257,19 @@
         TWEEN.start();
 
         xhr = new XMLHttpRequest();
-        var year = new Date().getFullYear();
-        var month = new Date().getUTCMonth() + 1;
-        month = ("0" + month).slice(-2);
-        var day = new Date().getUTCDate();
-        day = ("0" + day).slice(-2);
+        date = getParameterByName("date");
+        console.log(date)
+        if (date != null) {
+            month = date.substring(0, 2);
+            day   = date.substring(2, 4);
+            year  = date.substring(4, 9)
+        } else {
+            var year = new Date().getFullYear();
+            var month = new Date().getUTCMonth() + 1;
+            month = ("0" + month).slice(-2);
+            var day = new Date().getUTCDate();
+            day = ("0" + day).slice(-2);
+        }
 
         console.log('Loading data from ' + './' + year + '-' + month + '-' + day + '.json');
         document.getElementById("dataDate").innerHTML = month + "." + day + "." + year;
